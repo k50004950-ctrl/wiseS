@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String
+  bizNo     String
+  memo      String?
+  createdAt DateTime @default(now())
+  consentLinks ConsentLink[]
+}
+
+model ConsentLink {
+  id                 String   @id @default(cuid())
+  customerId         String
+  customer           Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  tokenHash          String   @unique
+  expiresAt          DateTime
+  status             String   @default("sent") // sent | opened | hometax_clicked | customer_completed | office_confirmed
+  openedAt           DateTime?
+  hometaxClickedAt   DateTime?
+  customerCompletedAt DateTime?
+  officeConfirmedAt  DateTime?
+  createdAt          DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  metaJson  String?  // JSON string for flexible metadata
+  createdAt DateTime @default(now())
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
